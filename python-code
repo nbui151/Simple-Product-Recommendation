@@ -1,0 +1,128 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr 27 15:18:36 2017
+
+@author: Nhung Bui
+"""
+
+'''
+Explanation: 
+This code takes as input a csv file. Each column corresponds to a product and each row corresponds to a customer. 
+For example, if the entries of the first row are [1, 1, 0, 0], this means a customer bought the first 
+two products in the basket, but not the third and fourth product. The entries are binary, 1 meaning that at least one item 
+from a product was bought, 0 meaning none was bought. This product recommendation code calculates the Probability that 
+the customer will purchase item X if he/she has purchased item Y, based on past customers' recorded behavior.
+The support of a product is defined as Pr(customer buys X) 
+The support of two products is defined as Pr(customer buys both X and Y) 
+The confidence is defined as Probability(customer buys X | he/she bought Y) 
+The confidence is the measure we are interested in and is calculated as Confidence = Pr(customer buys both X and Y)/Pr(customer buys Y) 
+To use the code, load your file.
+support_item stores Pr(customer buys X) for each product X, Y, Z, etc... 
+support_dict stores Pr(customer buys X and Y) for pairs of products X and Y, Y and Z, X and Z, etc. 
+confidence_dict stores Pr(customer buys X | he/she bought Y) for pairs of products. 
+sorted_support: sorts support_dict by the highest probabilities
+sorted_confidence: sorts confidence_dict by the highest probabilities 
+
+Usage: 
+Say the file of past purchase data you loaded has 4 products: apple, orange, bread and butter (like in my example file), 
+the function dictsearch("your product name", support_dict) would print out all the product pair support 
+for the product, sorted by highest probability first, you will see which other products are frequently purchased together 
+with that product. 
+On the other hand, the function dictsearch("| your product name", confidence_dict) prints out the probability that 
+a customer will buy a certain product, given that he/she bought your product, sorted by the highest probabilities. 
+If you want to recommend another product to your customer, pick those displayed first by the function. 
+
+Eg. dictsearch("apple", support_dict) prints out Pr(Buy apple and orange), Pr(Buy apple and bread), etc..., sorted high to low 
+dictsearch("| apple", confidence_dict) prints out Pr(Buy orange | apple), Pr(Buy bread | apple), etc..., sorted high to low 
+dictsearch("apple |", confidence_dict) would print out Pr(Buy apple | orange), Pr(Buy apple | bread), etc..., you might use this 
+to decide when to recommend apple. 
+'''
+
+# loading data 
+import numpy as np
+import pandas as pd
+import operator # for sorting commmand  
+
+X =pd.read_csv('affinity.csv', sep=',', header=0)
+
+# print the names of the products 
+print(X.columns) 
+
+'''Let's calculate the Probability that a customer will buy a product (eg. apples)
+and store the result in a dictionary called support_item, whereby support["apple"] = Pr(customer buys apple) 
+and Pr(customer buys apple) = (Total number of customers who bought apples)/(Total number of customers)
+'''
+
+# count the number of times each product was bought 
+count_item = np.zeros(X.shape[1])
+for i in range(X.shape[1]): 
+    count_item[i] = (X[X.columns[i]]==1).sum()
+
+# calculate Pr(customer buys X) 
+support_item = count_item/(X.shape[0]) 
+
+# store the product name and probability in a dictionary 
+support_item_dict = {}
+for i in range(X.shape[1]):
+    support_item_dict[X.columns[i]] = support_item[i]
+
+# calculate the support for two products Pr(customer buys X and Y) 
+name_pairwise = pd.DataFrame(np.zeros([X.shape[1],X.shape[1]]))
+support_pairwise = pd.DataFrame(np.zeros([X.shape[1],X.shape[1]]))
+
+for col in range(X.shape[1]):
+    item1 = str(X.columns[col])
+    for col2 in range(X.shape[1]):
+        item2 = str(X.columns[col2])
+        if item1 is not item2: 
+            num_pair = 0
+            for row in range(X.shape[0]):     
+                if X.iloc[row, col] == 1 and X.iloc[row, col2] == 1:
+                    num_pair += 1
+            name_pairwise.iloc[col, col2] = str("Pr(Buy " + item1 + " and " + item2 + ")") 
+            support_pairwise.iloc[col, col2] = round(num_pair/X.shape[0], 3)
+
+# store product pair name and probabilities in a dictionary 
+# format of dictionary is: support_dict["Pr(Buy apple and orange)"] = number 
+
+support_dict = {}
+for m in range(name_pairwise.shape[1]):
+    for n in range(name_pairwise.shape[1]):
+        if support_pairwise.iloc[m,n] > 0: 
+            support_dict[name_pairwise.iloc[m,n]] = support_pairwise.iloc[m,n]
+sorted_support = sorted(support_dict.items(), key=operator.itemgetter(1), reverse=True)
+
+
+## Calculate the confidence which is Pr(customer will buy X | he/she bought Y)  
+confidence_pairwise = pd.DataFrame(np.zeros([X.shape[1],X.shape[1]]))
+name_pairwise_conf = pd.DataFrame(np.zeros([X.shape[1],X.shape[1]]))
+
+for col in range(X.shape[1]):
+    item1 = str(X.columns[col])
+    for col2 in range(X.shape[1]):
+        item2 = str(X.columns[col2])
+        if item1 is not item2: 
+            name_pairwise_conf.iloc[col, col2] = str("Pr(Buy " + item1 + " | " + item2 + ")") 
+            confidence_pairwise.iloc[col, col2] = support_pairwise.iloc[col, col2]/support_item[col2] 
+
+# store the names and probabilities in dictionary 
+# format of dictionary is: confidence_dict["Pr(Buy apple | orange)"] = number 
+
+confidence_dict = {}
+for m in range(name_pairwise_conf.shape[1]):
+    for n in range(name_pairwise_conf.shape[1]):
+        if confidence_pairwise.iloc[m,n] > 0: 
+            confidence_dict[name_pairwise_conf.iloc[m,n]] = confidence_pairwise.iloc[m,n]
+sorted_conf = sorted(confidence_dict.items(), key=operator.itemgetter(1), reverse=True)
+       
+# write a function to help us pull out the probabilities if certain keywords are contained in the key 
+
+def dictsearch(search_string, dictionary):
+    mini_dict = {}
+    for key, v in dictionary.items():
+        if str(search_string) in key:
+            key = key 
+            value = round(v, 4)
+            mini_dict[key] = value
+    mini_dict_sorted = sorted(mini_dict.items(), key=operator.itemgetter(1), reverse=True)
+    return mini_dict_sorted        
