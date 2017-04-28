@@ -17,29 +17,21 @@ The confidence is the measure we are interested in and is calculated as Confiden
 Usage: 
 load your file of past purchase data, each column should be labeled with the name of the product, run the script in python
 
-dictsearch("apple", support_dict)
-		This prints out Pr(Buy apple and orange), Pr(Buy apple and bread), etc..., sorted high to low 
+dictsearch("apple", support_dict): This prints out Pr(Buy apple and orange), Pr(Buy apple and bread), etc..., sorted high to low 
 
-dictsearch("| apple", confidence_dict) 
-		This prints out Pr(Buy orange | apple), Pr(Buy bread | apple), etc..., sorted high to low 
+dictsearch("| apple", confidence_dict): This prints out Pr(Buy orange | apple), Pr(Buy bread | apple), etc..., sorted high to low 
 
-dictsearch("apple |", confidence_dict) 
-		This prints out Pr(Buy apple | orange), Pr(Buy apple | bread), etc..., you might use this to decide when to recommend apple. 
+dictsearch("apple |", confidence_dict): This prints out Pr(Buy apple | orange), Pr(Buy apple | bread), etc..., you might use this to decide when to recommend apple. 
 
-support_item 
-		This stores Pr(customer buys X) for each product X, Y, Z, etc... 
+support_item: This stores Pr(customer buys X) for each product X, Y, Z, etc... 
 
-support_dict 
-		This stores Pr(customer buys X and Y) for pairs of products X and Y, Y and Z, X and Z, etc. 
+support_dict: This stores Pr(customer buys X and Y) for pairs of products X and Y, Y and Z, X and Z, etc. 
 		
-confidence_dict 
-		This stores Pr(customer buys X | he/she bought Y) for pairs of products. 
+confidence_dict: This stores Pr(customer buys X | he/she bought Y) for pairs of products. 
 
-sorted_support 
-		This sorts support_dict by the highest probabilities
+sorted_support: This sorts support_dict by the highest probabilities
 
-sorted_confidence
-		This sorts confidence_dict by the highest probabilities 
+sorted_confidence: This sorts confidence_dict by the highest probabilities 
 
 
 
