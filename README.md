@@ -2,20 +2,19 @@
 
 Explanation: 
 
-This code takes as input a csv file. Each column corresponds to a product and each row corresponds to a customer. For example, if the entries of the first row are [1, 1, 0, 0], this means a customer bought the first two products in the basket, but not the third and fourth product. The entries are binary, 1 meaning that at least one item from a product was bought, 0 meaning none was bought. 
-
-This product recommendation code calculates the Probability that the customer will purchase item X if he/she has purchased item Y, based on past customers' recorded behavior:
+This code takes as input a csv file. Each column corresponds to a product and each row corresponds to a customer. For example, if the entries of the first row are [1, 1, 0, 0], this means a customer bought the first two products in the basket, but not the third and fourth product. The entries are binary, 1 meaning that at least one item from a product was bought, 0 meaning none was bought. This code calculates the probability that the customer will purchase item X if he/she has purchased item Y, based on past customers' recorded behavior. 
 
 The support of a product is defined as Pr(customer buys X) 
 The support of two products is defined as Pr(customer buys both X and Y) 
-The confidence is defined as Probability(customer buys X | he/she bought Y) 
+The confidence is defined as Pr(customer buys X | he/she bought Y) 
 
 The confidence is the measure we are interested in and is calculated as Confidence = Pr(customer buys both X and Y)/Pr(customer buys Y) 
 
 
 
 Usage: 
-load your file of past purchase data, each column should be labeled with the name of the product, run the script in python
+
+Load your file of past purchase data, each column should be labeled with the name of the product, run the script in python
 
 dictsearch("apple", support_dict): This prints out Pr(Buy apple and orange), Pr(Buy apple and bread), etc..., sorted high to low 
 
